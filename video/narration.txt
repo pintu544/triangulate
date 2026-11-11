@@ -1,0 +1,13 @@
+Ask one AI model a research question, and you get one confident answer. But you have no way of knowing whether that answer is the consensus, or the outlier. This is Triangulate. It puts the same question to three different models, independently, then cross-examines what they said. The panel: OpenAI's GPT-OSS 120B, Mistral Large, and Mistral Medium — two providers, three models — and every call goes through a single endpoint: Otari, Mozilla AI's gateway. Up top you can see it: gateway eu.api.otari.ai, mode — OTARI.
+
+The question: should solo developers adopt spec-driven development when working with AI coding agents? A planner first splits it into three sub-questions — what the evidence says, the strongest arguments for and against, and what new data would change the answer. Then every model answers every sub-question on its own. Nine panel calls, plus the planner, plus a synthesizer that cross-examines them — eleven calls, all through Otari.
+
+Here's the briefing, and it isn't one blended paragraph — it's split by how much the panel actually agrees. Consensus first: all three models say spec-driven development works best when specs are clear and precise. The gains are modest and task-dependent, the time spent writing specs can eat the benefit, and the evidence base is still mostly small studies and anecdotes.
+
+Then, Contested — where disagreements are pinned to named models, never averaged away. On the headline question, GPT-OSS advocates adopting it, with caveats. Mistral Large is against: its current recommendation is not to adopt until there's robust evidence of net benefit. Mistral Medium sits in between — neutral, conditional, no endorsement yet. They split on code quality too: Mistral Large claims a twenty to thirty percent improvement; Mistral Medium warns about subtle bugs and security flaws creeping in.
+
+And anything only one model claimed is quarantined in Single-source claims, flagged unverified. Mistral Large's fifty-five percent faster figure? One study, one model, nobody else corroborated it — so it's labelled exactly that way, instead of being laundered into the consensus.
+
+Every one of those calls reports its token usage back through the gateway, and Triangulate totals it per model — just over nine thousand tokens for this entire briefing. And because the panel talks only to Otari, swapping a model is changing one environment variable and restarting. No new SDK, no new provider key in the code — those keys never leave Otari's vault.
+
+One question. Three independent answers. And a briefing that shows you its disagreements instead of hiding them. That's Triangulate — built on Otari, for the Mozilla Otari hackathon.

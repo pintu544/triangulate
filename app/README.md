@@ -8,10 +8,10 @@ Built for the **Mozilla Otari Hackathon (Devs Wilding Online!, DoraHacks)**. Bra
 
 Triangulate's whole premise is "one question, many models". Without a gateway, that means N provider SDKs, N keys, N billing quirks. With Otari:
 
-- **One endpoint, one token.** Every call is `POST https://eu.api.otari.ai/api/v1/chat/completions` Bearer-style auth is NOT used — the token goes in an Otari-Key header, and auth uses the auth. Swapping a panellist is changing a `provider/model` string — see `OTARI_MODELS`.
+- **One endpoint, one token.** Every call is `POST https://eu.api.otari.ai/api/v1/chat/completions` with the platform token in an `Otari-Key` header (Bearer auth is not used). Swapping a panellist is changing a `provider/model` string — see `OTARI_MODELS`.
 - **Provider keys stay in Otari's vault.** This repo and the browser never see an OpenAI/Mistral key; they hold only a scoped Otari platform token.
 - **Usage is accounted twice, consistently.** The gateway returns OpenAI-style `usage` per call; Triangulate aggregates it per model in the report, and the same calls show up in the Otari dashboard under the token — the demo cross-checks the two.
-- **Open-weight friendly.** The default panel mixes providers (`openai:gpt-4o-mini`, `mistral:mistral-large-latest`, `openai:gpt-4o`); adding an open-weight model hosted elsewhere is a one-line config change.
+- **Open-weight friendly.** The default panel mixes providers and model families (`openai/gpt-oss-120b`, `mistral/mistral-large-latest`, `mistral/mistral-medium-latest`) — all verified live against the gateway on 11 Nov 2026; adding another model is a one-line config change.
 
 ### Otari features used (submission item 4)
 

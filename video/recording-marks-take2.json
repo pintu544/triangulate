@@ -1,0 +1,54 @@
+[
+  {
+    "name": "pageReady",
+    "t": 0.29
+  },
+  {
+    "name": "typed",
+    "t": 14.8
+  },
+  {
+    "name": "submitted",
+    "t": 17.3
+  },
+  {
+    "name": "results:ok",
+    "t": 187.59
+  },
+  {
+    "name": "tour:consensus",
+    "t": 193.59
+  },
+  {
+    "name": "tour:contested",
+    "t": 217.25
+  },
+  {
+    "name": "tour:contested-detail",
+    "t": 234.65
+  },
+  {
+    "name": "tour:single-source",
+    "t": 251.17
+  },
+  {
+    "name": "tour:bottom-line",
+    "t": 274.65
+  },
+  {
+    "name": "tour:usage",
+    "t": 285.06
+  },
+  {
+    "name": "tour:raw-answers",
+    "t": 310.61
+  },
+  {
+    "name": "tour:top",
+    "t": 321.2
+  },
+  {
+    "name": "end",
+    "t": 334.7
+  }
+]
