@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Triangulate — multi-model research on Otari</title>
+<style>
+  :root { color-scheme: dark; }
+  body { font-family: system-ui, sans-serif; margin: 0; background: #0f1115; color: #e8eaf0; }
+  main { max-width: 880px; margin: 0 auto; padding: 32px 20px 64px; }
+  h1 { font-size: 28px; margin: 0 0 4px; }
+  .sub { color: #9aa3b2; margin: 0 0 20px; }
+  .banner { display:none; border:1px solid #8a6d1f; background:#2a230a; color:#f2d57e; padding:10px 14px; border-radius:8px; margin-bottom:16px; }
+  .panel { color:#9aa3b2; font-size: 14px; margin-bottom: 16px; }
+  form { display:flex; gap:8px; margin-bottom: 20px; }
+  input { flex:1; padding:12px; border-radius:8px; border:1px solid #2a2f3a; background:#171a21; color:#e8eaf0; font-size:15px; }
+  button { padding:12px 18px; border-radius:8px; border:0; background:#ff7139; color:#fff; font-weight:600; cursor:pointer; }
+  button:disabled { opacity:.5; cursor:wait; }
+  .card { background:#171a21; border:1px solid #232833; border-radius:10px; padding:18px; margin-bottom:16px; }
+  .card h2 { font-size:17px; margin:0 0 10px; }
+  table { width:100%; border-collapse: collapse; font-size:14px; }
+  td, th { padding:6px 8px; border-bottom:1px solid #232833; text-align:left; }
+  pre { white-space: pre-wrap; font-family: inherit; font-size: 15px; line-height: 1.55; margin:0; }
+  .err { color:#ff8a7a; }
+  .muted { color:#9aa3b2; font-size:13px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Triangulate</h1>
+  <p class="sub">One research question, answered independently by several models — every call routed through <strong>Otari</strong>, Mozilla AI's gateway — then cross-examined into one briefing.</p>
+  <div id="banner" class="banner">⚠️ MOCK MODE — no <code>OTARI_AI_TOKEN</code> is set, so the panel answers below are canned demo content, clearly labelled. Set the token to run the same pipeline live through otari.ai.</div>
+  <p class="panel" id="panelInfo">Loading panel…</p>
+  <form id="form">
+    <input id="q" type="text" placeholder="e.g. Do open-weight LLMs actually save teams money versus frontier APIs?" />
+    <button id="go" type="submit">Triangulate</button>
+  </form>
+  <div id="out"></div>
+</main>
+<script>
+  const out = document.getElementById('out');
+  const esc = (s) => s.replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+  fetch('/api/health').then(r => r.json()).then(h => {
+    document.getElementById('panelInfo').textContent =
+      `Gateway: ${h.baseUrl} · Panel: ${h.models.join(' | ')} · Mode: ${h.mode}`;
+    if (h.mode === 'mock') document.getElementById('banner').style.display = 'block';
+  }).catch(() => {});
+
+  document.getElementById('form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const question = document.getElementById('q').value.trim();
+    const btn = document.getElementById('go');
+    btn.disabled = true; btn.textContent = 'Asking the panel…';
+    out.innerHTML = '<p class="muted">Planning, fanning out to every model through Otari, then cross-examining…</p>';
+    try {
+      const res = await fetch('/api/research', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ question }) });
+      const r = await res.json();
+      if (!res.ok) throw new Error(r.error || 'Request failed');
+      const usageRows = Object.entries(r.usageByModel).map(([m,u]) =>
+        `<tr><td>${esc(m)}</td><td>${u.promptTokens}</td><td>${u.completionTokens}</td><td>${u.totalTokens}</td></tr>`).join('');
+      const cells = r.answers.map(a =>
+        `<div class="card"><h2>${esc(a.model)}</h2><p class="muted">${esc(a.subQuestion)}</p>` +
+        (a.error ? `<p class="err">Error: ${esc(a.error)}</p>` : `<pre>${esc(a.content)}</pre>`) + `</div>`).join('');
+      out.innerHTML =
+        `<div class="card"><h2>Briefing ${r.mode === 'mock' ? '(MOCK MODE)' : ''}</h2><pre>${esc(r.briefing)}</pre></div>` +
+        `<div class="card"><h2>Token usage by model (gateway-reported)</h2><table><tr><th>Model</th><th>Prompt</th><th>Completion</th><th>Total</th></tr>${usageRows}` +
+        `<tr><td><strong>Total</strong></td><td>${r.totals.promptTokens}</td><td>${r.totals.completionTokens}</td><td>${r.totals.totalTokens}</td></tr></table></div>` +
+        `<h2 style="font-size:17px">Raw panel answers</h2>` + cells;
+    } catch (err) {
+      out.innerHTML = `<p class="err">${esc(err.message)}</p>`;
+    } finally {
+      btn.disabled = false; btn.textContent = 'Triangulate';
+    }
+  });
+</script>
+</body>
+</html>
