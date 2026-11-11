@@ -2,11 +2,14 @@
  * Otari gateway client — the ONLY module in this app that knows Otari exists.
  *
  * Otari (Mozilla AI) is an OpenAI-compatible LLM gateway. The hosted platform
- * lives at https://api.otari.ai/v1 and takes a platform token as a Bearer
- * credential. Model strings are `provider:model` — one endpoint, one key,
- * every provider. That is the entire integration surface used here.
+ * endpoint used here is https://eu.api.otari.ai/api/v1 and it takes the
+ * platform token in an `Otari-Key` header. Model strings are deployment
+ * names such as `openai/gpt-oss-120b` — one endpoint, one key, every
+ * provider the account has credentials/hosted deployments for. That is the
+ * entire integration surface used here. (Contract verified live against the
+ * real account on 2026-11-11: chat completions, usage and cost blocks.)
  *
- * If OTARI_AI_TOKEN is not set, the client runs in MOCK MODE: deterministic
+ * If OTARI_API_KEY is not set, the client runs in MOCK MODE: deterministic
  * canned panel responses, clearly labelled everywhere they surface, so the
  * full pipeline can be demoed and tested with zero secrets.
  */
@@ -39,12 +42,18 @@ export interface OtariClient {
   models: string[];
 }
 
-export const DEFAULT_BASE_URL = "https://api.otari.ai/v1";
+export const DEFAULT_BASE_URL = "https://eu.api.otari.ai/api/v1";
 
+/**
+ * Panellists verified live on the project account (2026-11-11). A model only
+ * works if the Otari account has a hosted deployment or a configured provider
+ * credential for it — others return 424, so this list is deliberately the
+ * verified set, not a wishlist. Override with OTARI_MODELS.
+ */
 export const DEFAULT_MODELS = [
-  "openai:gpt-4o-mini",
-  "mistral:mistral-large-latest",
-  "openai:gpt-4o",
+  "openai/gpt-oss-120b",
+  "mistral/mistral-large-latest",
+  "mistral/mistral-medium-latest",
 ];
 
 export function parseModels(env: NodeJS.ProcessEnv): string[] {
@@ -58,14 +67,14 @@ export function parseModels(env: NodeJS.ProcessEnv): string[] {
 function realChat(baseUrl: string, token: string): ChatFn {
   return async (model, messages) => {
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 90_000);
+    const timeout = setTimeout(() => controller.abort(), 300_000);
     try {
       const res = await fetch(`${baseUrl}/chat/completions`, {
         method: "POST",
         signal: controller.signal,
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
+          "Otari-Key": token,
         },
         body: JSON.stringify({ model, messages }),
       });
@@ -166,7 +175,7 @@ function mockChat(): ChatFn {
 export function createOtariClient(env: NodeJS.ProcessEnv = process.env): OtariClient {
   const baseUrl = (env.OTARI_BASE_URL?.trim() || DEFAULT_BASE_URL).replace(/\/$/, "");
   const models = parseModels(env);
-  const token = env.OTARI_AI_TOKEN?.trim();
+  const token = (env.OTARI_API_KEY ?? env.OTARI_AI_TOKEN)?.trim();
   if (token) {
     return { chat: realChat(baseUrl, token), mode: "otari", baseUrl, models };
   }

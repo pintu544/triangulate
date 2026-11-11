@@ -10,7 +10,7 @@ console.log("=".repeat(72));
 console.log("TRIANGULATE — multi-model research agent");
 console.log(
   client.mode === "mock"
-    ? "MODE: MOCK — no OTARI_AI_TOKEN set. All answers below are canned and labelled."
+    ? "MODE: MOCK — no OTARI_API_KEY set. All answers below are canned and labelled."
     : `MODE: OTARI — gateway ${client.baseUrl}`,
 );
 console.log(`Panel: ${client.models.join(" | ")}`);

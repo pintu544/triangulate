@@ -8,7 +8,7 @@ Built for the **Mozilla Otari Hackathon (Devs Wilding Online!, DoraHacks)**. Bra
 
 Triangulate's whole premise is "one question, many models". Without a gateway, that means N provider SDKs, N keys, N billing quirks. With Otari:
 
-- **One endpoint, one token.** Every call is `POST https://api.otari.ai/v1/chat/completions` with the platform token as Bearer auth. Swapping a panellist is changing a `provider:model` string — see `OTARI_MODELS`.
+- **One endpoint, one token.** Every call is `POST https://eu.api.otari.ai/api/v1/chat/completions` Bearer-style auth is NOT used — the token goes in an Otari-Key header, and auth uses the auth. Swapping a panellist is changing a `provider/model` string — see `OTARI_MODELS`.
 - **Provider keys stay in Otari's vault.** This repo and the browser never see an OpenAI/Mistral key; they hold only a scoped Otari platform token.
 - **Usage is accounted twice, consistently.** The gateway returns OpenAI-style `usage` per call; Triangulate aggregates it per model in the report, and the same calls show up in the Otari dashboard under the token — the demo cross-checks the two.
 - **Open-weight friendly.** The default panel mixes providers (`openai:gpt-4o-mini`, `mistral:mistral-large-latest`, `openai:gpt-4o`); adding an open-weight model hosted elsewhere is a one-line config change.
@@ -16,7 +16,7 @@ Triangulate's whole premise is "one question, many models". Without a gateway, t
 ### Otari features used (submission item 4)
 
 1. Hosted Otari gateway (otari.ai) as the single AI endpoint for the whole app.
-2. Multi-provider routing via `provider:model` model strings.
+2. Multi-provider routing via `provider/model` model strings.
 3. Platform tokens (virtual keys) instead of raw provider keys in the app.
 4. Per-call usage reporting (`usage` blocks) aggregated in-app; dashboard-side usage tracking under the same token.
 5. Provider-key vaulting on otari.ai (keys added in org settings, never in code).
@@ -26,7 +26,7 @@ Triangulate's whole premise is "one question, many models". Without a gateway, t
 ```bash
 cd app
 npm install
-cp .env.example .env   # then fill in OTARI_AI_TOKEN (see below), or leave blank for MOCK MODE
+cp .env.example .env   # then fill in OTARI_API_KEY (see below), or leave blank for MOCK MODE
 npm run demo -- "Your research question here"   # CLI demo
 npm start                                        # web UI on http://localhost:4173
 npm test                                         # unit tests (no network)
@@ -37,7 +37,7 @@ npm test                                         # unit tests (no network)
 1. Sign up at **otari.ai** (the first 200 signups were offered $20 in tokens).
 2. Add a provider key at `otari.ai/organization-settings/provider-keys` (e.g. OpenAI, Mistral) so the gateway can route.
 3. Create a platform token at `otari.ai/organization-settings/api-tokens`.
-4. Put it in `.env` as `OTARI_AI_TOKEN=...` (or export it). Restart — the app detects it and switches from MOCK MODE to OTARI mode. Nothing else changes.
+4. Put it in `.env` as `OTARI_API_KEY=...` (or export it). Restart — the app detects it and switches from MOCK MODE to OTARI mode. Nothing else changes.
 
 ### Mock mode
 

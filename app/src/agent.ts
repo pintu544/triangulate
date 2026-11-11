@@ -6,7 +6,7 @@
  * code at all — swap the panel by changing model strings, nothing else.
  */
 
-import type { ChatFn, TokenUsage } from "./otari.js";
+import type { ChatFn, ChatResult, TokenUsage } from "./otari.js";
 
 export interface PanelAnswer {
   model: string;
@@ -74,13 +74,19 @@ export async function runResearch(
   };
   const lead = models[0];
 
-  // 1. Plan
-  const plan = await chat(lead, [
-    { role: "system", content: PLANNER_SYSTEM },
-    { role: "user", content: `Question: ${question}` },
-  ]);
-  bump(lead, plan.usage);
-  const subQuestions = parseSubQuestions(plan.content, question);
+  // 1. Plan (a failed planner call falls back to the raw question rather
+  //    than losing the whole run — the panel still answers it directly.)
+  let subQuestions: string[];
+  try {
+    const plan = await chat(lead, [
+      { role: "system", content: PLANNER_SYSTEM },
+      { role: "user", content: `Question: ${question}` },
+    ]);
+    bump(lead, plan.usage);
+    subQuestions = parseSubQuestions(plan.content, question);
+  } catch {
+    subQuestions = [question];
+  }
 
   // 2. Fan out: every model answers every sub-question, in parallel, all
   //    through the same gateway client.
@@ -119,10 +125,21 @@ export async function runResearch(
       return `## Sub-question: ${sq}\n\n${cells}`;
     })
     .join("\n\n");
-  const synth = await chat(lead, [
-    { role: "system", content: SYNTHESIZER_SYSTEM },
-    { role: "user", content: `Research question: ${question}\n\n${panelText}` },
-  ]);
+  let synth: ChatResult;
+  try {
+    synth = await chat(lead, [
+      { role: "system", content: SYNTHESIZER_SYSTEM },
+      { role: "user", content: `Research question: ${question}\n\n${panelText}` },
+    ]);
+  } catch {
+    // Degraded briefing: the raw panel, labelled as unsynthesized.
+    synth = {
+      content:
+        `## Consensus\nSynthesis call failed; panellist answers are reproduced unsynthesized below.\n\n## Contested\nSee the raw panel.\n\n## Single-source claims\nSee the raw panel.\n\n## Bottom line\n${panelText}`,
+      usage: { ...ZERO },
+      mock: mode === "mock",
+    };
+  }
   bump(lead, synth.usage);
 
   const totals: TokenUsage = { ...ZERO };

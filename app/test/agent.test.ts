@@ -73,8 +73,8 @@ test("a set token selects real Otari mode; env panel parsing works", () => {
   assert.equal(client.mode, "otari");
   assert.deepEqual(client.models, ["a:b", "c:d"]);
   assert.deepEqual(parseModels({}), [
-    "openai:gpt-4o-mini",
-    "mistral:mistral-large-latest",
-    "openai:gpt-4o",
+    "openai/gpt-oss-120b",
+    "mistral/mistral-large-latest",
+    "mistral/mistral-medium-latest",
   ]);
 });

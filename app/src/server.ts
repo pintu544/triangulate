@@ -49,7 +49,7 @@ server.listen(port, () => {
   console.log(`Triangulate running at http://localhost:${port}`);
   console.log(
     client.mode === "mock"
-      ? "MODE: MOCK (no OTARI_AI_TOKEN set — canned panel answers, clearly labelled)"
+      ? "MODE: MOCK (no OTARI_API_KEY set — canned panel answers, clearly labelled)"
       : `MODE: OTARI (gateway ${client.baseUrl}, panel: ${client.models.join(", ")})`,
   );
 });
